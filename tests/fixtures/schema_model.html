@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DNS editor model (synthetic, example.com)</title>
+</head>
+<body>
+<!-- Synthetic DNS editor for tests/test_schema_dom.py. Invented data on example.* domains only. It is a
+     minimal model: a domain select, an add button that reveals the add form, a type select whose form
+     re-renders after a short delay, a settings dialog and a planted token field. Nothing here is saved. -->
+<div class="dns-page">
+  <select id="selectDomain" name="domain">
+    <option value="example.com" selected>example.com</option>
+    <option value="example.net">example.net</option>
+    <option value="example.org">example.org</option>
+  </select>
+  <button id="addBtn" type="button" class="btn">Add record</button>
+</div>
+
+<form name="formAddRecord" style="display:none">
+  <input type="hidden" name="csrf" value="synthetic-csrf">
+  <select name="type">
+    <option value="A">A</option>
+    <option value="CNAME">CNAME</option>
+    <option value="MX">MX</option>
+    <option value="CAA">CAA</option>
+    <option value="TXT">TXT</option>
+    <option value="SRV">SRV</option>
+    <option value="DMARC">DMARC</option>
+    <option value="URL">URL</option>
+  </select>
+  <div class="model-fields row"></div>
+  <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+<div id="settings" class="modal" style="display:none">
+  <input type="checkbox" role="switch" id="validate_forwards" checked>
+  <input type="checkbox" role="switch" id="adv_dns_records">
+  <input type="checkbox" role="switch" id="editor_bulk_save_mode">
+  <input type="checkbox" role="switch" id="editor_bulk_del_mode" checked>
+  <input type="checkbox" role="switch" id="editor_search_live" checked>
+  <input type="checkbox" role="switch" id="dyn_auth_token_enabled">
+  <select name="paging_size">
+    <option>5</option>
+    <option>10</option>
+    <option>25</option>
+    <option selected>50</option>
+    <option>100</option>
+    <option>250</option>
+  </select>
+  <input type="text" name="token" value="PLANTED-TOKEN-7731">
+</div>
+
+<script>
+(function () {
+  function modelLog(key, value) {
+    var root = document.documentElement;
+    var log = JSON.parse(root.getAttribute('data-model-log') || '{}');
+    (log[key] = log[key] || []).push(value);
+    root.setAttribute('data-model-log', JSON.stringify(log));
+  }
+
+  var TTL = ['[DEF] 2 hours', '5 minutes', '10 minutes', '15 minutes', '30 minutes', '1 hour',
+             '3 hours', '6 hours', '12 hours', '1 day', '2 days', '3 days', '1 week', '10 days', '2 weeks'];
+  var POLICIES = [];
+  for (var i = 0; i < 100; i++) { POLICIES.push('p' + i); }
+  var host = {name: 'host', label: 'Host', kind: 'text'};
+  var ttl = {name: 'ttl', label: 'TTL', kind: 'ttl'};
+  var FIELDS = {
+    A: [
+      {name: 'host', label: 'Host', kind: 'text', required: true},
+      {name: 'content', label: 'IP address', kind: 'text', required: true, placeholder: '0.0.0.0'},
+      ttl
+    ],
+    CNAME: [
+      host,
+      {name: 'content', label: 'Target', kind: 'text', required: true},
+      ttl
+    ],
+    MX: [
+      host,
+      {name: 'content', label: 'Mail server', kind: 'text', required: true},
+      {name: 'prio', label: 'Priority', kind: 'text', required: true},
+      ttl
+    ],
+    CAA: [
+      host,
+      {name: 'flag', label: 'Flag', kind: 'text', disabled: true},
+      {name: 'tag', label: 'Tag', kind: 'select', options: ['issue', 'issuewild', 'iodef']},
+      {name: 'provider', label: 'Provider', kind: 'select', options: ['letsencrypt.org', 'pki.goog', 'sectigo.com']},
+      ttl
+    ],
+    TXT: [
+      host,
+      {name: 'content', label: 'Text', kind: 'textarea', required: true},
+      ttl
+    ],
+    SRV: [
+      {name: 'service', label: 'Service', kind: 'text'},
+      {name: 'proto', label: 'Protocol', kind: 'select', options: ['_tcp', '_udp']},
+      host,
+      {name: 'prio', label: 'Priority', kind: 'text'},
+      {name: 'weight', label: 'Weight', kind: 'text'},
+      {name: 'port', label: 'Port', kind: 'text'},
+      {name: 'content', label: 'Target', kind: 'text'},
+      ttl,
+      {name: 'legacy_weight', label: 'Legacy weight', kind: 'text', hidden: true}
+    ],
+    DMARC: [
+      host,
+      {name: 'policy', label: 'Policy', kind: 'select', options: POLICIES},
+      ttl
+    ],
+    URL: [
+      host,
+      {name: 'content', label: 'Target URL', kind: 'text'}
+    ]
+  };
+  // Delayed on its first selection only: the form appears after this many ms, longer than the settle wait.
+  var FIRST_DELAY_MS = {MX: 1000};
+  var NORMAL_DELAY_MS = 50;
+
+  var form = document.querySelector('form[name=formAddRecord]');
+  var typeSel = form.querySelector('select[name=type]');
+  var box = form.querySelector('.model-fields');
+  var generation = 0;
+  var seen = {};
+
+  function column(f) {
+    var col = document.createElement('div');
+    col.className = 'col-md-4 mb-2';
+    if (f.hidden) { col.style.display = 'none'; }
+    var label = document.createElement('div');
+    label.className = 'fw-light';
+    label.textContent = f.label;
+    col.appendChild(label);
+    var input;
+    if (f.kind === 'select' || f.kind === 'ttl') {
+      input = document.createElement('select');
+      (f.kind === 'ttl' ? TTL : f.options).forEach(function (text) {
+        var option = document.createElement('option');
+        option.value = text;
+        option.textContent = text;
+        input.appendChild(option);
+      });
+    } else if (f.kind === 'textarea') {
+      input = document.createElement('textarea');
+    } else {
+      input = document.createElement('input');
+      input.type = 'text';
+      if (f.placeholder) { input.placeholder = f.placeholder; }
+    }
+    input.name = f.name;
+    if (f.required) { input.required = true; }
+    if (f.disabled) { input.disabled = true; }
+    col.appendChild(input);
+    return col;
+  }
+
+  function selectedType() {
+    return typeSel.options[typeSel.selectedIndex].text.trim();
+  }
+
+  // Clear the fields at once, then render the type's fields after its delay. A stale render is dropped.
+  function show(text) {
+    generation += 1;
+    var mine = generation;
+    box.innerHTML = '';
+    if (text === 'URL') { return; }   // never renders its fields
+    var delay = seen[text] ? NORMAL_DELAY_MS : (FIRST_DELAY_MS[text] || NORMAL_DELAY_MS);
+    seen[text] = true;
+    setTimeout(function () {
+      if (mine !== generation) { return; }
+      FIELDS[text].forEach(function (f) { box.appendChild(column(f)); });
+    }, delay);
+  }
+
+  typeSel.addEventListener('change', function () {
+    modelLog('changes', selectedType());
+    show(selectedType());
+  });
+
+  document.getElementById('addBtn').addEventListener('click', function () {
+    form.style.display = 'block';
+    show(selectedType());   // the form opens on the type it has selected
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    modelLog('submits', 'formAddRecord');
+  });
+
+  document.addEventListener('click', function (e) {
+    var target = e.target.closest('button,a');
+    if (!target) { return; }
+    modelLog('clicks', target.id || target.textContent.trim());
+  }, true);
+
+  var wanted = new URLSearchParams(window.location.search).get('LOGIN');
+  var select = document.getElementById('selectDomain');
+  Array.prototype.forEach.call(select.options, function (option) {
+    option.selected = option.value === wanted;
+  });
+  if (!wanted) { select.options[0].selected = true; }
+})();
+</script>
+</body>
+</html>

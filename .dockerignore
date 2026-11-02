@@ -1,0 +1,10 @@
+.git
+tests
+deploy
+__pycache__
+*.md
+.pytest_cache
+*.vault
+*.key
+*.env
+site.vars

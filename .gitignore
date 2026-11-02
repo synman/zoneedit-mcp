@@ -1,0 +1,8 @@
+__pycache__/
+.pytest_cache/
+*.egg-info/
+.claude/
+deploy/site.vars
+deploy/zoneedit-mcp.env
+deploy/vault/
+deploy/node-vault-mcp/

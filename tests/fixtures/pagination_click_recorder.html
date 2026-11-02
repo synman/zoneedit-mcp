@@ -1,0 +1,16 @@
+<!-- Minimal model of the pagination click, not a recording of the panel: logs which DNS pagination nav (by index) received a page-link click, and stops the hash navigation. -->
+<script>
+function modelLog(key, value) {
+  var root = document.documentElement;
+  var log = JSON.parse(root.getAttribute('data-model-log') || '{}');
+  (log[key] = log[key] || []).push(value);
+  root.setAttribute('data-model-log', JSON.stringify(log));
+}
+document.addEventListener('click', function (e) {
+  var link = e.target.closest('a.page-link');
+  if (!link) { return; }
+  var navs = Array.prototype.slice.call(document.querySelectorAll("nav[aria-label='DNS pagination']"));
+  modelLog('pageNav', navs.indexOf(link.closest("nav[aria-label='DNS pagination']")));
+  e.preventDefault();
+}, true);
+</script>

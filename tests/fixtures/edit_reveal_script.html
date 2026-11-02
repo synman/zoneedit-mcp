@@ -1,0 +1,24 @@
+<!-- Minimal model of the EDIT click, not a recording of the panel: clicking a row's EDIT button shows that row's edit form; Save and Delete inside an open edit form are logged by row hash and never submitted. -->
+<script>
+function modelLog(key, value) {
+  var root = document.documentElement;
+  var log = JSON.parse(root.getAttribute('data-model-log') || '{}');
+  (log[key] = log[key] || []).push(value);
+  root.setAttribute('data-model-log', JSON.stringify(log));
+}
+document.addEventListener('click', function (e) {
+  var row = e.target.closest('div.item-wrapped');
+  if (e.target.closest('button.btn-edit') && row) {
+    var form = row.querySelector('form[name=formEditRecord]');
+    if (form) { form.style.display = 'block'; }
+    modelLog('editClicked', row.getAttribute('data-hash'));
+  }
+  if (e.target.closest('form[name=formEditRecord] button.btn-danger') && row) {
+    modelLog('deleted', row.getAttribute('data-hash'));
+  }
+  if (e.target.closest('form[name=formEditRecord] button[type=submit]') && row) {
+    e.preventDefault();
+    modelLog('saved', row.getAttribute('data-hash'));
+  }
+}, true);
+</script>

@@ -1,0 +1,22 @@
+<!-- Minimal model of the ADD click, not a recording of the panel: clicking the Add record button (#addBtn) shows every add form, logs the click, and stops a Save from submitting. -->
+<script>
+function modelLog(key, value) {
+  var root = document.documentElement;
+  var log = JSON.parse(root.getAttribute('data-model-log') || '{}');
+  (log[key] = log[key] || []).push(value);
+  root.setAttribute('data-model-log', JSON.stringify(log));
+}
+document.addEventListener('click', function (e) {
+  if (e.target.closest('#addBtn')) {
+    document.querySelectorAll('form[name=formAddRecord]').forEach(function (f) { f.style.display = 'block'; });
+    modelLog('addClicked', 'addBtn');
+  }
+  if (e.target.closest('form[name=formAddRecord] button[type=submit]')) {
+    e.preventDefault();
+    modelLog('saved', 'addForm');
+  }
+  if (e.target.closest('form[name=formAddRecord] button.btn-warning')) {
+    modelLog('confirmFired', 'confirm');
+  }
+}, true);
+</script>

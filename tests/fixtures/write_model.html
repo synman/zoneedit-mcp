@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DNS write model (synthetic, example.com)</title>
+</head>
+<body>
+<!-- Synthetic DNS editor for tests/test_dynamic_writes_dom.py. Invented data on example.* domains only. The add
+     form's fields are generated per type after a short delay; URL never renders its fields. The edit form of
+     one row holds a disabled CAA flag. Every click and every save is logged; nothing is saved. -->
+<button type="button" id="addBtn" class="btn btn-primary">ADD RECORD</button>
+
+<div class="item-wrapped row" data-hash="a1b2c3">
+  <span>CAA</span>
+  <span>@</span>
+  <button type="button" id="editRow" class="btn-edit btn-primary">EDIT</button>
+  <form name="formEditRecord" id="formEditRecord" style="display: none;">
+    <input type="text" name="host" value="@">
+    <input type="text" name="flag" value="0" disabled>
+    <select name="tag"><option value="issue">issue</option><option value="issuewild">issuewild</option><option value="iodef">iodef</option></select>
+    <select name="provider"><option value="letsencrypt.org">letsencrypt.org</option><option value="pki.goog">pki.goog</option><option value="sectigo.com">sectigo.com</option></select>
+    <select name="ttl"><option value="[DEF] 2 hours">[DEF] 2 hours</option><option value="1 hour">1 hour</option></select>
+    <button type="button" class="btn btn-secondary">Cancel</button>
+    <button type="submit" id="saveEdit" class="btn btn-success">Save</button>
+  </form>
+</div>
+
+<form name="formAddRecord" id="formAddRecord" style="display: none;">
+  <select name="type">
+    <option value="MX">MX</option>
+    <option value="SRV">SRV</option>
+    <option value="CHK">CHK</option>
+    <option value="CAA">CAA</option>
+    <option value="DMARC">DMARC</option>
+    <option value="URL">URL</option>
+  </select>
+  <div class="model-fields row"></div>
+  <button type="submit" id="saveAdd" class="btn btn-success">Save</button>
+</form>
+
+<script>
+(function () {
+  function modelLog(key, value) {
+    var root = document.documentElement;
+    var log = JSON.parse(root.getAttribute('data-model-log') || '{}');
+    (log[key] = log[key] || []).push(value);
+    root.setAttribute('data-model-log', JSON.stringify(log));
+  }
+
+  var TTL = {name: 'ttl', label: 'TTL', kind: 'ttl'};
+  var TTL_LABELS = ['[DEF] 2 hours', '1 hour'];
+  var HOST = {name: 'host', label: 'Host', kind: 'text', required: true};
+  var FIELDS = {
+    MX: [HOST,
+         {name: 'content', label: 'Mail server', kind: 'text', required: true},
+         {name: 'prio', label: 'Priority', kind: 'text', required: true},
+         TTL],
+    SRV: [{name: 'service', label: 'Service', kind: 'text'},
+          {name: 'proto', label: 'Protocol', kind: 'select', options: ['_tcp - Stream', '_udp - Datagram']},
+          HOST,
+          {name: 'prio', label: 'Priority', kind: 'text'},
+          {name: 'weight', label: 'Weight', kind: 'text'},
+          {name: 'port', label: 'Port', kind: 'text'},
+          {name: 'content', label: 'Target', kind: 'text'},
+          TTL],
+    CHK: [HOST,
+          {name: 'content', label: 'Value', kind: 'text'},
+          {name: 'enabled', label: 'Enabled', kind: 'checkbox'},
+          TTL],
+    CAA: [HOST,
+          {name: 'flag', label: 'Flag', kind: 'text', required: true, disabled: true, placeholder: '0'},
+          {name: 'tag', label: 'Tag', kind: 'select', required: true, options: ['issue', 'issuewild', 'iodef']},
+          {name: 'provider', label: 'Provider', kind: 'select', required: true, options: ['letsencrypt.org', 'pki.goog', 'sectigo.com']},
+          TTL],
+    DMARC: [{name: 'host', label: 'Selector', kind: 'text'},
+            {name: 'policy', label: 'Policy', kind: 'select', options: ['none', 'quarantine', 'reject']},
+            TTL],
+    URL: []
+  };
+
+  var form = document.getElementById('formAddRecord');
+  var typeSel = form.querySelector('select[name=type]');
+  var box = form.querySelector('.model-fields');
+  var generation = 0;
+
+  function column(f) {
+    var col = document.createElement('div');
+    col.className = 'col-md-4 mb-2';
+    var label = document.createElement('div');
+    label.className = 'fw-light';
+    label.textContent = f.label;
+    col.appendChild(label);
+    var input;
+    if (f.kind === 'select' || f.kind === 'ttl') {
+      input = document.createElement('select');
+      (f.kind === 'ttl' ? TTL_LABELS : f.options).forEach(function (text) {
+        var option = document.createElement('option');
+        option.value = text;
+        option.textContent = text;
+        input.appendChild(option);
+      });
+    } else if (f.kind === 'checkbox') {
+      input = document.createElement('input');
+      input.type = 'checkbox';
+    } else {
+      input = document.createElement('input');
+      input.type = 'text';
+    }
+    input.name = f.name;
+    if (f.required) { input.required = true; }
+    if (f.disabled) { input.disabled = true; }
+    if (f.placeholder) { input.placeholder = f.placeholder; }
+    col.appendChild(input);
+    return col;
+  }
+
+  // The fields of the selected type appear in a timer: the first render of MX is the slow one.
+  function show(text) {
+    generation += 1;
+    var mine = generation;
+    box.innerHTML = '';
+    var delay = text === 'MX' && !show.seen ? 1000 : 50;
+    show.seen = true;
+    setTimeout(function () {
+      if (mine !== generation) { return; }
+      FIELDS[text].forEach(function (f) { box.appendChild(column(f)); });
+    }, delay);
+  }
+
+  typeSel.addEventListener('change', function () {
+    modelLog('changes', typeSel.options[typeSel.selectedIndex].text.trim());
+    show(typeSel.options[typeSel.selectedIndex].text.trim());
+  });
+
+  document.getElementById('addBtn').addEventListener('click', function () {
+    form.style.display = 'block';
+    show(typeSel.options[typeSel.selectedIndex].text.trim());
+  });
+
+  document.getElementById('editRow').addEventListener('click', function () {
+    document.getElementById('formEditRecord').style.display = 'block';
+  });
+
+  function collect(scope) {
+    var values = {};
+    scope.querySelectorAll('[name]').forEach(function (el) {
+      if (el.name === 'type') { return; }
+      if (el.type === 'checkbox') { values[el.name] = el.checked; }
+      else if (el.tagName === 'SELECT') { values[el.name] = el.options[el.selectedIndex].text.trim(); }
+      else { values[el.name] = el.value; }
+    });
+    return values;
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    modelLog('saved', collect(box));
+  });
+
+  document.getElementById('formEditRecord').addEventListener('submit', function (e) {
+    e.preventDefault();
+    modelLog('edited', collect(document.getElementById('formEditRecord')));
+  });
+
+  document.addEventListener('click', function (e) {
+    var target = e.target.closest('button,a');
+    if (!target) { return; }
+    modelLog('clicks', target.id || target.textContent.trim());
+  }, true);
+})();
+</script>
+</body>
+</html>

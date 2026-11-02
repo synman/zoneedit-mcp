@@ -1,0 +1,14 @@
+# Site values for deploy/compose.yaml. Copy to site.vars beside compose.yaml, fill in, and pass it with
+# --env-file ./site.vars. No secret belongs here: the bearer hash goes in zoneedit-mcp.env and the panel
+# credentials in the vault.
+
+# The user and group that own the deploy directory.
+DEPLOY_UID=1000
+DEPLOY_GID=1000
+
+# Host names the MCP mount answers to (comma-separated, no scheme).
+ZONEEDIT_ALLOWED_HOSTS=zoneedit.example.net
+
+# For deploy/zoneedit_admin.py only (run on the operator's machine; compose does not read these):
+#   ZONEEDIT_ADMIN_DEPLOY_DIR=/volume1/docker/zoneedit-mcp/deploy
+#   ZONEEDIT_ADMIN_SSH_ENTRY=nas-ssh
