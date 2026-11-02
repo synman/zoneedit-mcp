@@ -16,6 +16,7 @@ bearer-gated, in the same shape as the sibling `amt-mcp`.
 | [Troubleshooting](docs/troubleshooting.md) | Symptom, cause and action for every refusal, login fault and run fault. |
 | [Glossary](docs/glossary.md) | The terms used above. |
 | `CLAUDE.md` | Guardrails for coding agents working in this repo. |
+| [LICENSE](LICENSE) | DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE, version 2 (WTFPL). |
 
 **Update the guides when** a tool, an argument, a refusal code, a dependency, an environment variable or a vault entry changes. The same commit that changes the code changes the guide.
 
