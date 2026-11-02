@@ -5,7 +5,7 @@ Terms used across the README and the guides, in alphabetical order.
 | Term | Meaning |
 |------|---------|
 | **Apex** | The bare domain itself, written `@` as a host. |
-| **Authenticator / TOTP** | The six-digit time-based code of the panel's second factor, made from the seed. The server answers it once per login. |
+| **Authenticator / TOTP** | The six-digit time-based code of the panel's second factor (RFC 6238, HMAC-SHA1, 30 second step), made from the seed. No Google app is needed, because the server computes it itself. It answers once per login. |
 | **Bearer** | The `Authorization: Bearer <token>` header. Every tool call over HTTP needs the fleet `mcp-admin-token`. |
 | **Bulk save mode** | A panel editor switch. It must be off, read live from the checked state of `#editor_bulk_save_mode`, or a write is refused (`bulk_save_on_or_unknown`). |
 | **`confirmed`** | The write guard. False or unset previews and changes nothing. True makes the change, and only after the operator approves that exact change. |
@@ -38,7 +38,8 @@ Terms used across the README and the guides, in alphabetical order.
 | **Row** | One record as the panel lists it: type, host, content, TTL, hash, pending. |
 | **Schema** | The record types and, for each, the form fields, options and TTL labels the panel offers. |
 | **Second factor** | The Authenticator code page some logins show. The server answers it once, from the seed. |
-| **Seed** | The TOTP secret in the vault entry `zoneedit-panel-totp-seed`. Never returned, logged or echoed. |
+| **Seed** | The base32 TOTP secret in the vault entry `zoneedit-panel-totp-seed`. It is the `secret=` value of the enrolment QR. Never returned, logged or echoed. |
+| **Recovery code** | The one-time code the panel shows at enrolment. Using it turns two-factor off. Keep it in your own vault, never on the server. |
 | **Serving module** | One of the eight `zoneedit_*.py` files the Dockerfile copies. A change to one needs a version bump. |
 | **SOA** | The start of authority record. It governs how the zone is served. |
 | **stdio** | A local transport with no bearer gate, chosen with `--transport stdio`. |

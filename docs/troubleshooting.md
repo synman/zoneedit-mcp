@@ -20,7 +20,7 @@ call, and a repeated failed login can lock the panel account. Report to the oper
 |--------------|-------|--------|
 | `login_failed` | The panel did not accept the login. | Stop. Check the vault credential against the panel by hand. Report to the operator before any further login. |
 | `second_factor_required` | The login reached the code page and no usable seed is in the vault. | Add or repair `zoneedit-panel-totp-seed`. Do not retry the login. |
-| `second_factor_rejected` | The one code submitted was not accepted. | Stop. The seed may be wrong or the panel may have changed. Report to the operator. |
+| `second_factor_rejected` | The one code submitted was not accepted. | Stop. The seed may be wrong, the clock of the machine running the server may be off, or the panel may have changed. Check the seed with the install guide section 2a, step 3, and the clock with `date -u +%s`. Report to the operator. |
 | `login_latched` | A login or code failure happened in the last 900 s. Nothing reached the panel. | Read the cause with `zoneedit_2fa_status`. Wait it out, or clear it with `zoneedit_2fa_latch_clear` only after the operator agrees. A restart also clears it. |
 
 `zoneedit_2fa_status` shows `latch_seconds_left`, `last_second_factor` and whether the seed is present, by name

@@ -14,7 +14,7 @@ what they all need and the two local runs. Terms are in the [glossary](glossary.
   JSON. Any script with that contract works, and the author's own vault CLI is not published.
 - `dig` from the DNS utilities, optional. Without it a write still verifies and `dns_readback` reports
   `{"error": "dig_unavailable"}`.
-- A ZoneEdit account. If it asks for a second factor, an Authenticator seed.
+- A ZoneEdit account. If it asks for a second factor, a TOTP seed (section 2a). No Google app is needed.
 
 ## 1. Get the code and the packages
 
@@ -35,15 +35,60 @@ Three vault entries hold everything the server needs. The names are fixed:
 |-------------|-------|
 | `zoneedit-panel-username` | The panel login name. |
 | `zoneedit-panel-password` | The panel password. |
-| `zoneedit-panel-totp-seed` | The Authenticator seed, raw text or JSON with a `seed` or `value` field. Needed only when the panel asks for a second factor. |
+| `zoneedit-panel-totp-seed` | The TOTP seed, raw text or JSON with a `seed` or `value` field. Needed only when the panel asks for a second factor. Section 2a. |
 
 **Store them yourself, in a separate terminal, with the vault CLI's `set` command.** Never type a value into an
 agent session, because the transcript is kept in plaintext. The shape, once per entry:
 
 ```
 <path to secrets.py> set zoneedit-panel-username --value '<value>' --expires <YYYY-MM-DD>
-``` The server reads them in-process at call time and
-never returns, logs or echoes them.
+```
+
+The server reads them in-process at call time and never returns, logs or echoes them.
+
+## 2a. Set up the second factor (TOTP)
+
+Skip this if the panel asks for a password only. When it asks for a code, the server answers it itself and needs
+one thing: the **TOTP seed**. **No Google app and no Google account is involved.** The codes are plain RFC 6238
+(HMAC-SHA1, 30 second step, six digits), computed in `zoneedit_totp.py` with the Python standard library.
+"Google Authenticator" is only the name of a phone app that does the same sum. Any seed that app can hold, the
+server can use, and the seed is the whole second factor.
+
+1. **Enrol in the panel.** In the ZoneEdit control panel open the Authentication Method page and choose an
+   Authenticator app. The panel shows a QR code and a one-time **recovery code**. Keep the recovery code in your
+   own vault and nowhere else. Using it turns two-factor off.
+2. **Read the seed out of the QR.** The QR holds an `otpauth://totp/...?secret=<BASE32>` link. The base32 text
+   after `secret=` is the seed. Decode the QR offline in your own terminal with any QR decoder. If the panel
+   also offers the key as text, use that. Never paste or photograph the QR into an agent session, because it is
+   the whole second factor and the transcript is kept in plaintext.
+3. **Check the seed before you store it.** From the repo, in your own terminal, with a seed you can compare against
+   any authenticator app set up from the same QR:
+
+   ```
+   python3 -c "import getpass,sys,time; sys.path.insert(0,'.'); from zoneedit_totp import totp; print(totp(getpass.getpass('seed: '), time.time()))"
+   ```
+
+   The six digits must match the app's within the same 30 seconds. The seed may be typed with spaces, hyphens or
+   lower case, and the padding may be missing. The RFC 6238 test seed is the text `12345678901234567890` in base32. It gives `287082` at
+   epoch second 59, which `tests/test_totp.py` pins. That checks the install without touching your account.
+4. **Store it** in your own terminal. Omit `--value` so the vault CLI reads the seed from the prompt or stdin:
+
+   ```
+   <path to secrets.py> set zoneedit-panel-totp-seed --expires <YYYY-MM-DD>
+   ```
+
+   For the NAS container, copy the entry to its vault with the deploy `vault sync` step in the README Deploy
+   section. The recovery code is deliberately not in that sync.
+5. **Check the clock.** The code depends on the clock of the machine that runs the server, which is the container
+   on the NAS. Compare `date -u +%s` there with a trusted clock. A clock that is off by a step or more produces a
+   wrong code, and the panel answers `second_factor_rejected`.
+6. **Prove it end to end** with the checks in section 4: `zoneedit_2fa_status` shows `seed` as `present`, and one
+   `zoneedit_selftest` shows `second_factor` as `answered`.
+
+What the server does at the code page: one password submit, then at most one code, never retried. A code
+computed in the last 5 seconds of its step waits for the next step. The same step's code is never submitted twice
+by one process. A rejected code or a failed login latches new logins for 900 seconds. If you re-enrol, the seed
+changes: store the new one, sync it, and run one selftest.
 
 ## 3a. Run as a local stdio process
 
