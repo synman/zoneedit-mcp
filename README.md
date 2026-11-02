@@ -90,9 +90,9 @@ with the system `dig` (`/usr/bin/dig` on macOS). It is informative and never cha
 
 The panel credentials are the vault entries `zoneedit-panel-username` and
 `zoneedit-panel-password`. The panel's TOTP seed is the vault entry
-`zoneedit-panel-totp-seed` (raw text, or a JSON object with a `seed` or `value` field). It is plain RFC 6238, so no
-Google app or account is needed. Setup end to end is in the [install guide](docs/install-guide.md#2a-set-up-the-second-factor-totp). All three are
-read in-process at call time and never returned. The seed and each six-digit code are never a tool
+`zoneedit-panel-totp-seed` (raw text, or a JSON object with a `seed` or `value` field). All three are
+read in-process at call time and never returned. The seed is plain RFC 6238, so no Google app or account is needed.
+Setup end to end is in the [install guide](docs/install-guide.md#2a-set-up-the-second-factor-totp). The seed and each six-digit code are never a tool
 argument, logged, returned or echoed. The ZoneEdit code page was met and answered live on 2026-11-02:
 `zoneedit_selftest` reported `second_factor: answered` and `seed: present`. A live selftest shows that state every time.
 

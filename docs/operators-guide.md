@@ -87,6 +87,15 @@ Preview first and confirm only on the operator's word for these:
 | `verified: false` or `differences` | The panel re-read did not show exactly the change. | Read the zone. Report the differences to the operator. |
 | `replace_prompt_shown` | The panel wanted to confirm a replace. The tool never clicks Confirm. | Nothing changed. Do the replace by hand in the panel if it is wanted. |
 
+## The second factor
+
+When the panel asks for a code, the server answers it from the TOTP seed in the vault. No Google app or account is
+involved, because the code is plain RFC 6238. Check it with `zoneedit_2fa_status` (`seed` should read `present`) and
+one `zoneedit_selftest` (`second_factor` of `answered`). If the panel account is re-enrolled, the seed changes: store the
+new one, sync it to the server's vault, and run one selftest before any change. Enrolment, the seed check and the clock
+check are in the [install guide](install-guide.md#2a-set-up-the-second-factor-totp). A rejected code latches logins for
+900 seconds, so read [troubleshooting](troubleshooting.md) before trying again.
+
 ## What the tools never do
 
 - Replace a record. No code path clicks the panel's Confirm button or the zone-level save.
