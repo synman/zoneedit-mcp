@@ -27,7 +27,6 @@ Terms used across the README and the guides, in alphabetical order.
 | **Headless Chrome** | Chrome with no window, driven by Patchright. |
 | **Host** | The label of a record inside the domain, such as `www`, or `@` for the apex. |
 | **Latch** | The 900 s block on new logins after a login or code failure. Held in process memory. Cleared by a restart or `zoneedit_2fa_latch_clear`. |
-| **`node-vault-mcp`** | The app that holds the vault CLI `secrets.py` the server runs to read the panel credentials. |
 | **NS** | A name server record. The apex NS rows name the zone's own servers. |
 | **`ok` / `refused`** | Result fields. `ok` is true only when the call did what was asked and, for a write, the panel re-read shows it. `refused` carries a code and means nothing was changed. |
 | **Outcome unknown** | A failure after the final Save or Delete click. The change may have landed, so read the zone before retrying. |
@@ -46,7 +45,7 @@ Terms used across the README and the guides, in alphabetical order.
 | **Streamable HTTP** | The network transport the server uses by default. |
 | **`tools/call` / `tools/list`** | The MCP requests that run a tool and that list tools. Over HTTP `tools/call` needs the bearer. `tools/list` does not. |
 | **TTL (label)** | Time to live, the seconds a record may be cached. The panel names it in text, such as `1 hour`. |
-| **Vault** | The encrypted credential store read through the `secrets.py` CLI. |
+| **Vault** | The credential store, read through a CLI script that prints a named entry to stdout. |
 | **Version of record** | `__version__` in `zoneedit_server.py`, equal to `pyproject.toml` and reported by `initialize`. |
 | **Write guard** | The set of protections on a write: preview by default, `confirmed`, the warnings in the tool text, the `destructiveHint` annotation on update and delete, and the panel re-read. |
 | **Zone** | All the DNS records of one domain. |

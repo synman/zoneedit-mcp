@@ -25,7 +25,7 @@ bearer-gated, in the same shape as the sibling `amt-mcp`.
 - **Clients** reach it at `https://zoneedit.example.net/mcp`: a LAN-only DSM reverse-proxy rule on 443 (the `LAN Only` access profile) in front of the loopback port, and a dnsmasq LAN name `zoneedit.example.net` pointing at the NAS. Claude Code registers it in the workspace `.mcp.json` as an `http` server with `headersHelper` (`mcp_admin_headers.py`), so no agent handles the fleet token.
 - **Auth:** every `tools/call` needs the fleet `mcp-admin-token` bearer. `initialize` and `tools/list` need no token and return only names, descriptions and the server version. Prove the gate with a tokenless `tools/call`, never with `tools/list`.
 - **Proven live (2026-11-01 and 2026-11-02):** login with the Authenticator code page, the three-page read, `zoneedit_domains`, `zoneedit_schema` (31 types), and write PREVIEWS of A, AAAA, TXT, MX, CAA, SRV, URL, DMARC, PARK and SSHFP against the live schema (nothing saved). **Proven live on version 1.1.1 only:** a TXT add and its delete, and a CNAME add and delete. The write path was rebuilt after that (schema read, generic field fill, row-set verification), so **no version since 1.1.1 has a confirmed live write of any type.** **Not proven live:** `zoneedit_record_update`, a confirmed write of any type on the current code, a write of the apex A, NS, SOA or DYN, a further row beside an existing host and type, and whether the panel keeps every other row's `hash` across a write. The verification assumes it does, and hashes are only known to be stable across logins. The first confirmed write needs one operator-approved throwaway record.
-- **Running version:** the repo is ahead of the container. On 2026-11-02 the repo `__version__` was 1.9.0 and the NAS container ran 1.1.1. Nothing newer is deployed, and the repo has no git remote, so nothing is pushed. Read the running version back with `initialize` (see the runbook).
+- **Running version:** the repo is ahead of the container. On 2026-11-02 the repo `__version__` was 1.9.1 and the NAS container ran 1.1.1. Nothing newer is deployed, and the repo has no git remote, so nothing is pushed. Read the running version back with `initialize` (see the runbook).
 
 ## Tools
 
@@ -83,7 +83,7 @@ with the system `dig` (`/usr/bin/dig` on macOS). It is informative and never cha
 | `ZONEEDIT_BIND_HOST` | Bind address, default `127.0.0.1`. |
 | `ZONEEDIT_PORT` | Bind port, default `8768`. |
 | `ZONEEDIT_ALLOWED_HOSTS` | Comma-separated extra Host names accepted behind an ingress. |
-| `ZONEEDIT_SECRETS_CLI` | Path to the vault CLI (`secrets.py`) used to read the panel credentials. In the container compose sets it to `/opt/node-vault-mcp/services/secrets.py`. |
+| `ZONEEDIT_SECRETS_CLI` | Path to a vault CLI script used to read the panel credentials. The server runs `python <cli> get <entry>` and reads the value from stdout, raw or as JSON. In the container compose sets it to `/opt/node-vault-mcp/services/secrets.py`. |
 | `ZONEEDIT_CHROME_ARGS` | Extra Chromium flags, whitespace-split, read at call time. Compose sets `--no-sandbox --disable-dev-shm-usage`. |
 | `ZONEEDIT_ADMIN_DEPLOY_DIR`, `ZONEEDIT_ADMIN_SSH_ENTRY` | For `deploy/zoneedit_admin.py` only (run on the machine that holds the main vault): the NAS deploy directory and the vault entry holding the NAS `ssh_cmd`. For this deployment `/volume1/docker/zoneedit-mcp/deploy` and `nas-ssh`; `ZONEEDIT_SECRETS_CLI` there is the main vault's `secrets.py`. |
 

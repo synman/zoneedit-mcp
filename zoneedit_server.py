@@ -37,7 +37,7 @@ from zoneedit_gate import (
 # (hooks/version_bump_gate.py enforces the bump). FastMCP takes no version= kwarg; the lowlevel
 # Server's version is what initialize reports, so build_server sets it. Never derive it from a
 # library or package metadata.
-__version__ = "1.9.0"
+__version__ = "1.9.1"
 
 DEFAULT_BIND_HOST = "127.0.0.1"
 DEFAULT_PORT = 8768
@@ -271,7 +271,7 @@ async def zoneedit_record_add(
     type's form fields and the values its selects accept.
 
     WRITE GUARD: with ``confirmed`` True the record is added to the live zone and reaches the
-    internet after DNS propagation. With ``confirmed`` unset the tool clicks nothing and returns
+    internet after DNS propagation. With ``confirmed`` unset the tool saves nothing and returns
     a preview of ``before``, ``after`` and ``values``; it still logs in and reads the panel. The apex A,
     NS, SOA and DYN rows steer the zone or belong to update clients: preview them, confirm only on
     the operator's word.
@@ -336,7 +336,7 @@ async def zoneedit_record_update(
     use ``zoneedit_record_add``. Call ``zoneedit_schema`` first to learn the type's form fields.
 
     WRITE GUARD: with ``confirmed`` True the matched row is rewritten in the live zone and the new
-    value reaches the internet after DNS propagation. With ``confirmed`` unset the tool clicks
+    value reaches the internet after DNS propagation. With ``confirmed`` unset the tool saves
     nothing and returns a preview of ``before``, ``after`` and ``values``; it still logs in and reads
     the panel. The apex A, NS, SOA and DYN rows steer the zone or belong to update clients: preview
     them, confirm only on the operator's word.

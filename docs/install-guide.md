@@ -10,8 +10,8 @@ what they all need and the two local runs. Terms are in the [glossary](glossary.
 - Google Chrome stable. Patchright drives it headless (`channel="chrome"`).
 - The Python packages `mcp` (1.26 or newer, below 2) and `patchright`. The image pins `mcp==1.26.0` and
   `patchright==1.64.3`.
-- The vault CLI `secrets.py` from `node-vault-mcp`, and its `cryptography` package, for reading the panel
-  credentials.
+- A vault CLI script. The server runs `python <cli> get <entry>` and reads the value from stdout, raw or as
+  JSON. Any script with that contract works, and the author's own vault CLI is not published.
 - `dig` from the DNS utilities, optional. Without it a write still verifies and `dns_readback` reports
   `{"error": "dig_unavailable"}`.
 - A ZoneEdit account. If it asks for a second factor, an Authenticator seed.

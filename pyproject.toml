@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zoneedit-mcp"
-version = "1.9.0"
+version = "1.9.1"
 description = "ZoneEdit DNS records over bearer-gated streamable HTTP (headless browser)"
 requires-python = ">=3.11"
 # Floor 1.26: the bearer gate overrides FastMCP.call_tool/read_resource/get_prompt.

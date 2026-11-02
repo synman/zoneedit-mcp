@@ -34,8 +34,8 @@ logs in once. Do not loop calls, and do not retry after a login failure.
    not published. Zero records read is not proof the zone has none.
 3. **Learn the form.** `zoneedit_schema {"domain": "example.net", "record_type": "TXT"}` lists the fields, which
    are required, which are disabled and the values a select accepts. Skip it for a plain `A` or `CNAME`.
-4. **Preview.** Call the write tool without `confirmed`. It logs in, reads the panel, clicks nothing and
-   returns `before` and `after`.
+4. **Preview.** Call the write tool without `confirmed`. It logs in, reads the panel, opens the add form to read the type's fields, saves nothing and
+   returns `before` and `after`. A delete preview opens no form.
    ```
    zoneedit_record_add {"domain": "example.net", "type": "TXT", "host": "www", "content": "v=spf1 -all"}
    ```

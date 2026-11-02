@@ -51,7 +51,8 @@ argument, refusal code, dependency, environment variable or vault entry.
   A domain argument is checked against the account's list before it reaches a URL. `tests/test_no_zone_in_code.py`
   keeps the zone name out of the serving modules.
 - **Writes are planned first and never replace.** `zoneedit_writes.plan_write` is pure and decides
-  every refusal before any click, from the type's live schema (`schema_open`). Add may add a further row
+  every refusal before any field is filled or saved, from the type's live schema (`schema_open`, which
+  opens the add form and selects the type). Add may add a further row
   of a host and type that exists, and refuses any CNAME conflict. A panel that replaces instead is caught by
   the replace stop and by the add verification, which fails when any other row vanished. Update and delete act only on a row read in the
   same call, matched by exact `expect_content` and/or `expect_hash` (no normalising, no wildcard). Apex A,
@@ -59,7 +60,7 @@ argument, refusal code, dependency, environment variable or vault entry.
   guard, the annotations and the warning in the tool text, never a refusal by type or host. A disabled form field accepts only
   the panel's own default.
 - **Preview by default.** A write tool changes nothing unless `confirmed=True`. A record write's preview
-  logs in and reads the panel only. The latch clear's preview does not log in. Pagination clicks during a
+  logs in, reads the panel and, for add and update, opens the add form to read the type; it saves nothing. The latch clear's preview does not log in. Pagination clicks during a
   read are not writes.
 - **Never confirm a replace.** A visible Confirm button or a shown replace warning stops the run
   (`replace_prompt_shown`). No code path clicks Confirm or the zone-level save.
