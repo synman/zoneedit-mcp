@@ -38,8 +38,8 @@ Terms used across the README and the guides, in alphabetical order.
 | **Row** | One record as the panel lists it: type, host, content, TTL, hash, pending. |
 | **Schema** | The record types and, for each, the form fields, options and TTL labels the panel offers. |
 | **Second factor** | The Authenticator code page some logins show. The server answers it once, from the seed. |
-| **Seed** | The base32 TOTP secret in the vault entry `zoneedit-panel-totp-seed`. It is the `secret=` value of the enrolment QR. Never returned, logged or echoed. |
-| **Recovery code** | The one-time code the panel shows at enrolment. Using it turns two-factor off. Keep it in your own vault, never on the server. |
+| **Seed** | The base32 TOTP secret in the vault entry `zoneedit-panel-totp-seed`. It is the `secret=` value of the enrollment QR. Never returned, logged or echoed. |
+| **Recovery code** | The one-time code the panel shows at enrollment. Using it turns two-factor off. Keep it in your own vault, never on the server. |
 | **Serving module** | One of the eight `zoneedit_*.py` files the Dockerfile copies. A change to one needs a version bump. |
 | **SOA** | The start of authority record. It governs how the zone is served. |
 | **stdio** | A local transport with no bearer gate, chosen with `--transport stdio`. |

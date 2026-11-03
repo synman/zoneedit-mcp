@@ -92,7 +92,7 @@ Preview first and confirm only on the operator's word for these:
 When the panel asks for a code, the server answers it from the TOTP seed in the vault. No Google app or account is
 involved, because the code is plain RFC 6238. Check it with `zoneedit_2fa_status` (`seed` should read `present`) and
 one `zoneedit_selftest` (`second_factor` of `answered`). If the panel account is re-enrolled, the seed changes: store the
-new one, sync it to the server's vault, and run one selftest before any change. Enrolment, the seed check and the clock
+new one, sync it to the server's vault, and run one selftest before any change. Enrollment, the seed check and the clock
 check are in the [install guide](install-guide.md#2a-set-up-the-second-factor-totp). A rejected code latches logins for
 900 seconds, so read [troubleshooting](troubleshooting.md) before trying again.
 

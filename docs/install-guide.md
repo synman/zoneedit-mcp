@@ -54,7 +54,7 @@ one thing: the **TOTP seed**. **No Google app and no Google account is involved.
 "Google Authenticator" is only the name of a phone app that does the same sum. Any seed that app can hold, the
 server can use, and the seed is the whole second factor.
 
-1. **Enrol in the panel.** In the ZoneEdit control panel open the Authentication Method page and choose an
+1. **Enroll in the panel.** In the ZoneEdit control panel open the Authentication Method page and choose an
    Authenticator app. The panel shows a QR code and a one-time **recovery code**. Keep the recovery code in your
    own vault and nowhere else. Using it turns two-factor off.
 2. **Read the seed out of the QR.** The QR holds an `otpauth://totp/...?secret=<BASE32>` link. The base32 text
@@ -87,7 +87,7 @@ server can use, and the seed is the whole second factor.
 
 What the server does at the code page: one password submit, then at most one code, never retried. A code
 computed in the last 5 seconds of its step waits for the next step. The same step's code is never submitted twice
-by one process. A rejected code or a failed login latches new logins for 900 seconds. If you re-enrol, the seed
+by one process. A rejected code or a failed login latches new logins for 900 seconds. If you re-enroll, the seed
 changes: store the new one, sync it, and run one selftest.
 
 ## 3a. Run as a local stdio process
