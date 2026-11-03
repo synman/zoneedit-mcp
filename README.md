@@ -178,7 +178,7 @@ container publishes loopback only (`127.0.0.1:8768`).
 
 **Preflight.**
 1. Tests pass on the commit you mean to ship, `__version__` was bumped (the bump gate enforces it), and the tree is clean.
-2. Reach the NAS through the `nas-ssh` vault entry, one attempt (the lockout rule in the Isaac safety rules): resolve its `ssh_cmd` inline, never print it. Every remote command needs `PATH=$PATH:/usr/local/bin` for `docker`.
+2. Reach the NAS through the `nas-ssh` vault entry, one attempt (a failed attempt can lock the account, so make one attempt only): resolve its `ssh_cmd` inline, never print it. Every remote command needs `PATH=$PATH:/usr/local/bin` for `docker`.
 3. Compose names the image `zoneedit-mcp:local` (`deploy/compose.yaml`). Record the running state: `docker inspect -f '{{.Image}}' zoneedit-mcp` and the version a tokenless `initialize` reports.
 4. Keep a rollback copy (before step 1 below): `docker tag zoneedit-mcp:local zoneedit-mcp:prev`, and `cp -p` each module you are about to replace to `<module>.prev`.
 
@@ -199,7 +199,7 @@ container publishes loopback only (`127.0.0.1:8768`).
 **Failure branches.**
 - Any Verify step fails (version, sha256, image id, a tokenless call not refused, a `verify_endpoint.py` line not `ok`, `bulk_save_off` false, a `panel_total` that differs from the panel): do not report done. Roll back, then report the failing step to the operator.
 - Build fails: read the last 30 lines of the compose output, fix it in the repo and ship again; never hand-edit files on the NAS.
-- Container loops with `refusing to start the HTTP mount`: `zoneedit-mcp.env` lost its `MCP_ADMIN_TOKEN_HASH`. Restore the line from the amt-mcp env file on the NAS (the fleet hash is shared) without printing it, then `up -d`.
+- Container loops with `refusing to start the HTTP mount`: `zoneedit-mcp.env` lost its `MCP_ADMIN_TOKEN_HASH`. Restore the line from the shared token's hash source without printing it, then `up -d`.
 - `selftest` returns `login_failed`: stop and do not retry. A repeated failed login can lock the panel account, and the failure latches new logins for 900 s. Run `vault status` (on the machine that holds the main vault, with the three `ZONEEDIT_*` variables from [Environment](#environment)): `on_nas` false means run `vault sync`; `matches` false means the main-vault credential changed, so run `vault sync`. Report to the operator before any further login.
 - `selftest` returns `second_factor_required`: the login reached the code page but no usable seed is in the vault (`zoneedit-panel-totp-seed` missing or unreadable on the NAS). Run `vault status`; if the entry is absent, run `vault sync`. Do not retry the login. Report to the operator.
 - `selftest` returns `second_factor_rejected`: the one TOTP submit did not pass the code page. Stop and do not retry; the seed may be wrong or the panel may have changed. The server latches new attempts for 900 s. Report to the operator before any further login.

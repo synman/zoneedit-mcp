@@ -11,7 +11,6 @@ Four checks, none needs the bearer and none writes:
      before the tool body, so it writes nothing.
 
 Usage: verify_endpoint.py [URL]   (default: the public LAN mount, or http://127.0.0.1:8768/mcp on the NAS)
-Same pattern as the observability fleet's scripts/verify-mcp-endpoints.sh.
 """
 from __future__ import annotations
 

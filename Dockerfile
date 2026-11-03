@@ -15,7 +15,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends dnsutils \
     && rm -rf /var/lib/apt/lists/*
 
-# cryptography is for the mounted node-vault-mcp secrets.py, which zoneedit_vault runs as a child.
+# cryptography is for the mounted vault CLI (secrets.py), which zoneedit_vault runs as a child.
 # The patchright chrome installer places Google Chrome stable system-wide; zoneedit_session launches
 # channel="chrome" against it. The apt lists are removed in the same layer.
 RUN pip install --no-cache-dir "mcp==1.26.0" "patchright==1.64.3" "cryptography==46.0.3" \
