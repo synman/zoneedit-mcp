@@ -75,6 +75,21 @@ with the system `dig` (`/usr/bin/dig` on macOS). It is informative and never cha
 - The browser user agent is taken from the installed Chrome (`user_agent_for`), never `HeadlessChrome`.
 - The login latch (`LoginLatched`, 900 s) is in process memory. `zoneedit_2fa_status` shows it and `zoneedit_2fa_latch_clear` clears it.
 
+## Dependencies
+
+What the server needs to run. `tests/test_dependencies_declared.py` fails when a module imports a
+package this table does not name.
+
+| Dependency | Why |
+|---|---|
+| Python 3.11 or newer | The runtime. |
+| `mcp` (1.26 or newer, below 2) | The MCP server framework. Its HTTP stack brings `pydantic` and `uvicorn`, which the server also imports. |
+| `patchright` | Drives the browser. |
+| Google Chrome stable | The browser `patchright` runs headless, with `channel="chrome"`. |
+| `dig` from the DNS utilities (optional) | Reads the zone's own name servers after a write. Without it the write still verifies and the readback reports `dig_unavailable`. |
+| A vault CLI | Any script that runs as `python <cli> get <entry>` and prints the value, raw or as JSON. `ZONEEDIT_SECRETS_CLI` names it. A CLI that needs `cryptography` needs it in the same environment. |
+| A ZoneEdit account | The control panel the server signs in to. |
+
 ## Environment
 
 | Variable | Purpose |
