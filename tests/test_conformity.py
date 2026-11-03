@@ -1,6 +1,6 @@
 """Conformity check on the tool list a client receives (list_tools), not the decorators.
 
-Shape rules: mcp-builder SKILL.md 3.3 and qvc_conventions.md (Tool annotations, Write guards,
+Shape rules: the tool-annotation rules (Tool annotations, Write guards,
 Tool docstrings, Server instructions). The write-guard parameter is ``confirmed``.
 """
 import asyncio

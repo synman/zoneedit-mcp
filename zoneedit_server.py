@@ -2,7 +2,7 @@
 """zoneedit-mcp: read-only ZoneEdit DNS records (streamable HTTP, bearer-gated).
 
 Configuration (environment, none secret):
-    MCP_ADMIN_TOKEN_HASH   SHA-256 hex of the fleet mcp-admin-token. Required over HTTP.
+    ZONEEDIT_BEARER_SHA256   SHA-256 hex of the shared admin bearer token. Required over HTTP.
     ZONEEDIT_TRANSPORT     ``http`` (default) or ``stdio``; set by ``main`` from --transport.
     ZONEEDIT_BIND_HOST     bind address, default 127.0.0.1.
     ZONEEDIT_PORT          bind port, default 8768.
@@ -37,13 +37,13 @@ from zoneedit_gate import (
 # (hooks/version_bump_gate.py enforces the bump). FastMCP takes no version= kwarg; the lowlevel
 # Server's version is what initialize reports, so build_server sets it. Never derive it from a
 # library or package metadata.
-__version__ = "1.9.1"
+__version__ = "1.9.2"
 
 DEFAULT_BIND_HOST = "127.0.0.1"
 DEFAULT_PORT = 8768
 
 INSTRUCTIONS = (
-    "Over HTTP every tool call needs the fleet mcp-admin-token bearer; a tool call without it is "
+    "Over HTTP every tool call needs the shared admin bearer token; a tool call without it is "
     "refused as a tool error and nothing runs. "
     "Use these tools to list and change the public DNS records of a domain of the ZoneEdit account "
     "in the ZoneEdit control panel; search for them when a task asks to read, add, change or remove "

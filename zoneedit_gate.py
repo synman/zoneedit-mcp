@@ -1,4 +1,4 @@
-"""Fleet admin-token bearer gate for zoneedit-mcp (adapted from amt-mcp's amt_gate).
+"""Shared admin-token bearer gate for zoneedit-mcp.
 
 Invariants:
 
@@ -9,7 +9,7 @@ Invariants:
 3. Refusal is an MCP tool error (``ToolError`` -> ``isError: true``), never an HTTP status code.
 4. The transport is checked explicitly. Only an explicit ``ZONEEDIT_TRANSPORT=stdio`` skips the
    check; any other value, or none, is treated as HTTP and gated (fail closed).
-5. An unresolvable hash (``MCP_ADMIN_TOKEN_HASH`` unset or malformed) refuses every token.
+5. An unresolvable hash (``ZONEEDIT_BEARER_SHA256`` unset or malformed) refuses every token.
 
 Only the SHA-256 of the token is configured; a presented bearer is hashed and compared with
 ``hmac.compare_digest``.
@@ -28,10 +28,10 @@ from typing import Any
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ResourceError, ToolError
 
-HASH_ENV = "MCP_ADMIN_TOKEN_HASH"
+HASH_ENV = "ZONEEDIT_BEARER_SHA256"
 TRANSPORT_ENV = "ZONEEDIT_TRANSPORT"
-TOKEN_NAME = "mcp-admin-token"
-FLEET = "fleet"
+TOKEN_NAME = "admin"
+SHARED = "shared"
 
 _HEX64 = re.compile(r"[0-9a-f]{64}")
 
@@ -52,22 +52,22 @@ _principal: contextvars.ContextVar[str | None] = contextvars.ContextVar(
 
 
 def configured_hash() -> str | None:
-    """The configured fleet SHA-256 hex digest, or None when unset or malformed."""
+    """The configured shared SHA-256 hex digest, or None when unset or malformed."""
     value = os.environ.get(HASH_ENV, "").strip().lower()
     return value if _HEX64.fullmatch(value) else None
 
 
 def identify_bearer(presented: str | None) -> str | None:
-    """Return FLEET when the presented bearer hashes to the configured digest, else None."""
-    fleet = configured_hash()
-    if fleet is None or not presented:
+    """Return SHARED when the presented bearer hashes to the configured digest, else None."""
+    shared = configured_hash()
+    if shared is None or not presented:
         return None
     digest = hashlib.sha256(presented.encode("utf-8")).hexdigest()
-    return FLEET if hmac.compare_digest(digest, fleet) else None
+    return SHARED if hmac.compare_digest(digest, shared) else None
 
 
 def verify_bearer(presented: str | None) -> bool:
-    """True only when the presented bearer belongs to the configured fleet principal."""
+    """True only when the presented bearer belongs to the configured shared principal."""
     return identify_bearer(presented) is not None
 
 
@@ -116,7 +116,7 @@ class BearerContextMiddleware:
 
 
 _REFUSAL = (
-    f"this call requires the {TOKEN_NAME} bearer header "
+    f"this call requires the {TOKEN_NAME} bearer token header "
     "(Authorization: Bearer <token>); the call was refused and nothing ran"
 )
 

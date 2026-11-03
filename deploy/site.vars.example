@@ -10,5 +10,5 @@ DEPLOY_GID=1000
 ZONEEDIT_ALLOWED_HOSTS=zoneedit.example.net
 
 # For deploy/zoneedit_admin.py only (run on the operator's machine; compose does not read these):
-#   ZONEEDIT_ADMIN_DEPLOY_DIR=/volume1/docker/zoneedit-mcp/deploy
+#   ZONEEDIT_ADMIN_DEPLOY_DIR=/srv/zoneedit-mcp/deploy
 #   ZONEEDIT_ADMIN_SSH_ENTRY=nas-ssh

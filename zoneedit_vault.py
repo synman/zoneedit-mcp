@@ -1,4 +1,4 @@
-"""In-process vault resolution for zoneedit-mcp (adapted from amt-mcp's amt_vault).
+"""In-process vault resolution for zoneedit-mcp.
 
 Reads a vault entry by running the vault CLI (``secrets.py get <key>``) as a child process and
 capturing stdout. A value is returned to the caller and never logged, echoed, put in argv or env,

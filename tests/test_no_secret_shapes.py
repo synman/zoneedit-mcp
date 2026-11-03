@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-SKIP_DIRS = {".git", ".claude", "__pycache__", ".pytest_cache"}
+SKIP_DIRS = {".git", "__pycache__", ".pytest_cache"}
 SUFFIXES = {".py", ".md", ".html", ".yaml", ".yml", ".toml", ".example", ".json", ".txt", ""}
 
 SHAPES = {

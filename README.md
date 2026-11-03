@@ -4,7 +4,7 @@ MCP server for the DNS records of the domains on one ZoneEdit account, read and 
 control panel (cp.zoneedit.com) in a headless Chrome driven by Patchright. Only the panel login is configured:
 the domains, record types, form fields, option lists, TTL labels, editor settings and name servers are read
 from the account on every call. Streamable HTTP,
-bearer-gated, in the same shape as the sibling `amt-mcp`.
+bearer-gated.
 
 ## Documentation
 
@@ -15,18 +15,18 @@ bearer-gated, in the same shape as the sibling `amt-mcp`.
 | [Install guide](docs/install-guide.md) | Prerequisites, vault entries, the stdio and HTTP runs, and the install check. |
 | [Troubleshooting](docs/troubleshooting.md) | Symptom, cause and action for every refusal, login fault and run fault. |
 | [Glossary](docs/glossary.md) | The terms used above. |
-| `CLAUDE.md` | Guardrails for coding agents working in this repo. |
+| `AGENTS.md` | Guardrails for coding agents working in this repo. |
 | [LICENSE](LICENSE) | DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE, version 2 (WTFPL). |
 
 **Update the guides when** a tool, an argument, a refusal code, a dependency, an environment variable or a vault entry changes. The same commit that changes the code changes the guide.
 
 ## Where it runs
 
-- **Container** `zoneedit-mcp` on a NAS, deploy directory `/volume1/docker/zoneedit-mcp`, published on the NAS loopback `127.0.0.1:8768` only (layout and build in [Deploy](#deploy)).
-- **Clients** reach it at `https://zoneedit.example.net/mcp`: a LAN-only DSM reverse-proxy rule on 443 (the `LAN Only` access profile) in front of the loopback port, and a dnsmasq LAN name `zoneedit.example.net` pointing at the NAS. Claude Code registers it in the workspace `.mcp.json` as an `http` server with `headersHelper` (`mcp_admin_headers.py`), so no agent handles the fleet token.
-- **Auth:** every `tools/call` needs the fleet `mcp-admin-token` bearer. `initialize` and `tools/list` need no token and return only names, descriptions and the server version. Prove the gate with a tokenless `tools/call`, never with `tools/list`.
+- **Container** `zoneedit-mcp` on a NAS, deploy directory `/srv/zoneedit-mcp`, published on the NAS loopback `127.0.0.1:8768` only (layout and build in [Deploy](#deploy)).
+- **Clients** reach it at `https://zoneedit.example.net/mcp`: a LAN-only reverse-proxy rule on 443 in front of the loopback port, and a LAN DNS name `zoneedit.example.net` pointing at the NAS. An MCP client registers it as an `http` server whose header helper supplies the bearer, so no agent handles the shared token.
+- **Auth:** every `tools/call` needs the shared admin bearer token. `initialize` and `tools/list` need no token and return only names, descriptions and the server version. Prove the gate with a tokenless `tools/call`, never with `tools/list`.
 - **Proven live (2026-11-01 and 2026-11-02):** login with the Authenticator code page, the three-page read, `zoneedit_domains`, `zoneedit_schema` (31 types), and write PREVIEWS of A, AAAA, TXT, MX, CAA, SRV, URL, DMARC, PARK and SSHFP against the live schema (nothing saved). **Proven live on version 1.1.1 only:** a TXT add and its delete, and a CNAME add and delete. The write path was rebuilt after that (schema read, generic field fill, row-set verification), so **no version since 1.1.1 has a confirmed live write of any type.** **Not proven live:** `zoneedit_record_update`, a confirmed write of any type on the current code, a write of the apex A, NS, SOA or DYN, a further row beside an existing host and type, and whether the panel keeps every other row's `hash` across a write. The verification assumes it does, and hashes are only known to be stable across logins. The first confirmed write needs one operator-approved throwaway record.
-- **Running version:** the repo is ahead of the container. On 2026-11-02 the repo `__version__` was 1.9.1 and the NAS container ran 1.1.1. Nothing newer is deployed, and the repo has no git remote, so nothing is pushed. Read the running version back with `initialize` (see the runbook).
+- **Running version:** the repo can be ahead of the deployed container. Read the container's version with an `initialize` request (`serverInfo.version`) and compare it with `__version__` before judging what is live.
 
 ## Tools
 
@@ -79,14 +79,14 @@ with the system `dig` (`/usr/bin/dig` on macOS). It is informative and never cha
 
 | Variable | Purpose |
 |----------|---------|
-| `MCP_ADMIN_TOKEN_HASH` | SHA-256 hex of the fleet `mcp-admin-token`. Required over HTTP; unset or malformed refuses every token. |
+| `ZONEEDIT_BEARER_SHA256` | SHA-256 hex of the shared admin bearer token. Required over HTTP; unset or malformed refuses every token. |
 | `ZONEEDIT_TRANSPORT` | `http` (default) or `stdio`. Only an explicit `stdio` skips the bearer gate. |
 | `ZONEEDIT_BIND_HOST` | Bind address, default `127.0.0.1`. |
 | `ZONEEDIT_PORT` | Bind port, default `8768`. |
 | `ZONEEDIT_ALLOWED_HOSTS` | Comma-separated extra Host names accepted behind an ingress. |
-| `ZONEEDIT_SECRETS_CLI` | Path to a vault CLI script used to read the panel credentials. The server runs `python <cli> get <entry>` and reads the value from stdout, raw or as JSON. In the container compose sets it to `/opt/node-vault-mcp/services/secrets.py`. |
+| `ZONEEDIT_SECRETS_CLI` | Path to a vault CLI script used to read the panel credentials. The server runs `python <cli> get <entry>` and reads the value from stdout, raw or as JSON. In the container compose sets it to `/opt/vault-cli/services/secrets.py`. |
 | `ZONEEDIT_CHROME_ARGS` | Extra Chromium flags, whitespace-split, read at call time. Compose sets `--no-sandbox --disable-dev-shm-usage`. |
-| `ZONEEDIT_ADMIN_DEPLOY_DIR`, `ZONEEDIT_ADMIN_SSH_ENTRY` | For `deploy/zoneedit_admin.py` only (run on the machine that holds the main vault): the NAS deploy directory and the vault entry holding the NAS `ssh_cmd`. For this deployment `/volume1/docker/zoneedit-mcp/deploy` and `nas-ssh`; `ZONEEDIT_SECRETS_CLI` there is the main vault's `secrets.py`. |
+| `ZONEEDIT_ADMIN_DEPLOY_DIR`, `ZONEEDIT_ADMIN_SSH_ENTRY` | For `deploy/zoneedit_admin.py` only (run on the machine that holds the main vault): the NAS deploy directory and the vault entry holding the NAS `ssh_cmd`. For this deployment `/srv/zoneedit-mcp/deploy` and `nas-ssh`; `ZONEEDIT_SECRETS_CLI` there is the main vault's `secrets.py`. |
 
 The panel credentials are the vault entries `zoneedit-panel-username` and
 `zoneedit-panel-password`. The panel's TOTP seed is the vault entry
@@ -131,7 +131,7 @@ They skip themselves when Chrome cannot launch. The full run takes about 2 minut
 To serve over HTTP:
 
 ```
-MCP_ADMIN_TOKEN_HASH=<sha256 of the token> ZONEEDIT_SECRETS_CLI=<path to secrets.py> \
+ZONEEDIT_BEARER_SHA256=<sha256 of the token> ZONEEDIT_SECRETS_CLI=<path to secrets.py> \
   python3 zoneedit_server.py   # 3.11 or newer; the panel login needs Patchright and Chrome installed
 ```
 
@@ -154,13 +154,13 @@ container publishes loopback only (`127.0.0.1:8768`).
   installs `dnsutils` (for `dig`) and Google Chrome (`patchright install --with-deps chrome`), and
   runs as uid 10001 inside the image.
 - **NAS layout:** the repo-root files (`Dockerfile` and the eight modules) live in
-  `/volume1/docker/zoneedit-mcp`. `compose.yaml`, `site.vars`, `zoneedit-mcp.env`, `vault/` and
-  `node-vault-mcp/` live in `/volume1/docker/zoneedit-mcp/deploy`. `ZONEEDIT_ADMIN_DEPLOY_DIR` is
-  that `deploy` path, so `vault sync` writes `deploy/vault/`, which compose mounts at `/vault` (the dedicated vault is `/vault/zoneedit-mcp.vault` beside its key file). `node-vault-mcp/`
+  `/srv/zoneedit-mcp`. `compose.yaml`, `site.vars`, `zoneedit-mcp.env`, `vault/` and
+  `vault-cli/` live in `/srv/zoneedit-mcp/deploy`. `ZONEEDIT_ADMIN_DEPLOY_DIR` is
+  that `deploy` path, so `vault sync` writes `deploy/vault/`, which compose mounts at `/vault` (the dedicated vault is `/vault/zoneedit-mcp.vault` beside its key file). `vault-cli/`
   must hold `services/secrets.py` and `services/vault_secrets/`, because compose mounts it at
-  `/opt/node-vault-mcp` and reads `/opt/node-vault-mcp/services/secrets.py`.
+  `/opt/vault-cli` and reads `/opt/vault-cli/services/secrets.py`.
 - **Build time:** the Chrome layer took about 55 minutes on the NAS. Build with `--progress plain`.
-- **Env file:** `deploy/zoneedit-mcp.env` (mode 0600) holds `MCP_ADMIN_TOKEN_HASH=<sha256 of the fleet
+- **Env file:** `deploy/zoneedit-mcp.env` (mode 0600) holds `ZONEEDIT_BEARER_SHA256=<sha256 of the shared
   token>`. Never the token itself.
 - **Vault sync:** `deploy/zoneedit_admin.py vault sync` rebuilds the NAS vault in `vault/` with only the
   three entries (`zoneedit-panel-username`, `zoneedit-panel-password`, `zoneedit-panel-totp-seed`), values passed over stdin.
@@ -183,8 +183,8 @@ container publishes loopback only (`127.0.0.1:8768`).
 4. Keep a rollback copy (before step 1 below): `docker tag zoneedit-mcp:local zoneedit-mcp:prev`, and `cp -p` each module you are about to replace to `<module>.prev`.
 
 **Procedure.**
-1. Ship each changed module by writing it beside the old one and renaming over it, so a dropped connection never leaves a half file: `cat > .<module>.new && mv -f .<module>.new <module>` in `/volume1/docker/zoneedit-mcp`, with the file on stdin. Compare `sha256sum` on the NAS with the local file.
-2. From `/volume1/docker/zoneedit-mcp/deploy` run `docker compose --progress plain --env-file ./site.vars -f compose.yaml up -d --build`. With the Chrome layer cached it finishes in under a minute. If it starts rebuilding the apt or Chrome layer it takes about 55 minutes: let it finish, never kill it.
+1. Ship each changed module by writing it beside the old one and renaming over it, so a dropped connection never leaves a half file: `cat > .<module>.new && mv -f .<module>.new <module>` in `/srv/zoneedit-mcp`, with the file on stdin. Compare `sha256sum` on the NAS with the local file.
+2. From `/srv/zoneedit-mcp/deploy` run `docker compose --progress plain --env-file ./site.vars -f compose.yaml up -d --build`. With the Chrome layer cached it finishes in under a minute. If it starts rebuilding the apt or Chrome layer it takes about 55 minutes: let it finish, never kill it.
 3. A change to `deploy/zoneedit-mcp.env` or `site.vars` needs the same `up -d`, because compose reads them when it creates the container.
 
 **Verify (all of these before saying it worked).**
@@ -192,14 +192,14 @@ container publishes loopback only (`127.0.0.1:8768`).
 2. Read the version back: POST `initialize` to `http://127.0.0.1:8768/mcp` from the NAS (headers `Content-Type: application/json`, `Accept: application/json, text/event-stream`). `serverInfo.version` must equal `__version__` at the shipped commit.
 3. A tokenless `tools/call` of `zoneedit_records` returns an `isError` result saying the call was refused and nothing ran.
 4. `sha256sum` of all eight modules on the NAS equals the repo at the shipped commit.
-5. Through the registered client, call `zoneedit_selftest` once: `login` ok, `panel_total` equal to the live count, `bulk_save_off` true. The container log then shows `tool=zoneedit_selftest principal=fleet`.
-6. From the repo on any LAN machine, run `python3 deploy/verify_endpoint.py`. It checks the public mount `https://zoneedit.example.net/mcp` with no bearer. Four lines must read `ok`: bare GET 406, `serverInfo` equal to `__version__`, 9 tools, tokenless call refused. A 404 means the DSM rule is gone and a 421 means a host mismatch. Pass a URL to check another mount.
+5. Through the registered client, call `zoneedit_selftest` once: `login` ok, `panel_total` equal to the live count, `bulk_save_off` true. The container log then shows `tool=zoneedit_selftest principal=shared`.
+6. From the repo on any LAN machine, run `python3 deploy/verify_endpoint.py`. It checks the public mount `https://zoneedit.example.net/mcp` with no bearer. Four lines must read `ok`: bare GET 406, `serverInfo` equal to `__version__`, 9 tools, tokenless call refused. A 404 means the proxy rule is gone and a 421 means a host mismatch. Pass a URL to check another mount.
 7. On the machine that holds the main vault, from the repo, run `python3 deploy/zoneedit_admin.py vault status` (the three variables are in [Environment](#environment)): both entries `on_nas` true and `matches` true.
 
 **Failure branches.**
 - Any Verify step fails (version, sha256, image id, a tokenless call not refused, a `verify_endpoint.py` line not `ok`, `bulk_save_off` false, a `panel_total` that differs from the panel): do not report done. Roll back, then report the failing step to the operator.
 - Build fails: read the last 30 lines of the compose output, fix it in the repo and ship again; never hand-edit files on the NAS.
-- Container loops with `refusing to start the HTTP mount`: `zoneedit-mcp.env` lost its `MCP_ADMIN_TOKEN_HASH`. Restore the line from the shared token's hash source without printing it, then `up -d`.
+- Container loops with `refusing to start the HTTP mount`: `zoneedit-mcp.env` lost its `ZONEEDIT_BEARER_SHA256`. Restore the line from the shared token's hash source without printing it, then `up -d`.
 - `selftest` returns `login_failed`: stop and do not retry. A repeated failed login can lock the panel account, and the failure latches new logins for 900 s. Run `vault status` (on the machine that holds the main vault, with the three `ZONEEDIT_*` variables from [Environment](#environment)): `on_nas` false means run `vault sync`; `matches` false means the main-vault credential changed, so run `vault sync`. Report to the operator before any further login.
 - `selftest` returns `second_factor_required`: the login reached the code page but no usable seed is in the vault (`zoneedit-panel-totp-seed` missing or unreadable on the NAS). Run `vault status`; if the entry is absent, run `vault sync`. Do not retry the login. Report to the operator.
 - `selftest` returns `second_factor_rejected`: the one TOTP submit did not pass the code page. Stop and do not retry; the seed may be wrong or the panel may have changed. The server latches new attempts for 900 s. Report to the operator before any further login.
@@ -209,4 +209,4 @@ container publishes loopback only (`127.0.0.1:8768`).
 
 **Done.** Verify 1 to 7 all pass, the running version is recorded in the tracker's receipt, and the change is committed (a push still needs the operator's word).
 
-**Update this section when** the Dockerfile COPY list, `deploy/compose.yaml`, the NAS directory layout, the DSM rule or the verification tools change. `tests/test_deploy.py` pins the Dockerfile and compose facts this section relies on.
+**Update this section when** the Dockerfile COPY list, `deploy/compose.yaml`, the NAS directory layout, the proxy rule or the verification tools change. `tests/test_deploy.py` pins the Dockerfile and compose facts this section relies on.

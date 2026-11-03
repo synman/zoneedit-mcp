@@ -39,7 +39,7 @@ CONTAINER = "zoneedit-mcp"
 VAULT_FILES = ("zoneedit-mcp.vault", "zoneedit-mcp.key")
 EXPIRES = "2035-01-01"
 NOTES = "zoneedit-mcp dedicated vault copy (deploy/zoneedit_admin.py vault sync)"
-NAS_CLI = "/opt/node-vault-mcp/services/secrets.py"   # inside the container; read from its own env
+NAS_CLI = "/opt/vault-cli/services/secrets.py"   # inside the container; read from its own env
 
 Runner = Callable[..., subprocess.CompletedProcess]
 

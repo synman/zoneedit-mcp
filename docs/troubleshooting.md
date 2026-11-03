@@ -10,8 +10,8 @@ call, and a repeated failed login can lock the panel account. Report to the oper
 
 | Symptom | Cause | Action |
 |---------|-------|--------|
-| Tool error "this call requires the mcp-admin-token bearer header ... refused and nothing ran" | The call had no valid bearer. | Use a client that sends the fleet token. Nothing ran. |
-| Server exits with code 2, "refusing to start the HTTP mount" | `MCP_ADMIN_TOKEN_HASH` is unset or not 64 hex characters. | Set it to the SHA-256 hex of the fleet token. Never the token. |
+| Tool error "this call requires the admin bearer token header ... refused and nothing ran" | The call had no valid bearer. | Use a client that sends the shared token. Nothing ran. |
+| Server exits with code 2, "refusing to start the HTTP mount" | `ZONEEDIT_BEARER_SHA256` is unset or not 64 hex characters. | Set it to the SHA-256 hex of the shared token. Never the token. |
 | Tool error `VaultError` | A vault entry is missing, empty, unreadable, or `ZONEEDIT_SECRETS_CLI` is unset. | Check the three entries (`zoneedit-panel-username`, `zoneedit-panel-password`, `zoneedit-panel-totp-seed`) and the CLI path. See the README runbook for `vault status`. |
 
 ## Login and second factor (`zoneedit_selftest` or any call)

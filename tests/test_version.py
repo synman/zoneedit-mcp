@@ -35,7 +35,7 @@ def test_the_lowlevel_server_carries_the_constant():
 
 def test_initialize_over_http_reports_the_constant_not_the_sdk_version(monkeypatch):
     monkeypatch.setenv("ZONEEDIT_TRANSPORT", "http")
-    monkeypatch.setenv("MCP_ADMIN_TOKEN_HASH", "a" * 64)
+    monkeypatch.setenv("ZONEEDIT_BEARER_SHA256", "a" * 64)
     app = server.build_http_app(server.register_tools(server.build_server()))
     with TestClient(app, base_url="http://127.0.0.1:8768") as client:
         response = client.post("/mcp", headers=HEADERS, json=INITIALIZE)

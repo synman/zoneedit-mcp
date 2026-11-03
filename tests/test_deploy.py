@@ -33,7 +33,7 @@ def _load_admin():
 
 admin = _load_admin()
 SSH_ENTRY = "nas-ssh"
-CFG = admin.Config(cli="/vault/secrets.py", deploy_dir="/volume1/docker/zoneedit-mcp", ssh_entry=SSH_ENTRY)
+CFG = admin.Config(cli="/vault/secrets.py", deploy_dir="/srv/zoneedit-mcp", ssh_entry=SSH_ENTRY)
 VALUES = {key: f"value-for-{key}-7c1e" for key in admin.ALLOWED_KEYS}
 
 
@@ -96,7 +96,7 @@ def test_compose_has_one_service():
 
 
 def test_compose_publishes_only_loopback_and_stays_on_bridge():
-    """Pins the CLAUDE.md guardrail 'compose publishes 127.0.0.1:8768 only'. The service is parsed as YAML,
+    """Pins the AGENTS.md guardrail 'compose publishes 127.0.0.1:8768 only'. The service is parsed as YAML,
     so every quoting and form counts: quoted, bare (an int), long-form dict, or a second entry. Every
     ports entry must be a string beginning 127.0.0.1:, at least one must exist (a missing ports block
     cannot pass), and the network mode must be bridge exactly."""
@@ -113,8 +113,8 @@ def test_deploy_files_name_no_secret_value_and_no_token_hash():
     for path in (COMPOSE, SITE_EXAMPLE, DOCKERFILE):
         text = path.read_text()
         assert not re.search(r"[0-9a-fA-F]{64}", text), path.name
-        # A placeholder (`MCP_ADMIN_TOKEN_HASH=<...>`) is documentation; any other value is a real hash.
-        assert not re.search(r"MCP_ADMIN_TOKEN_HASH=(?!<)\S", text), path.name
+        # A placeholder (`ZONEEDIT_BEARER_SHA256=<...>`) is documentation; any other value is a real hash.
+        assert not re.search(r"ZONEEDIT_BEARER_SHA256=(?!<)\S", text), path.name
 
 
 def test_dockerignore_excludes_vault_key_and_env_files():

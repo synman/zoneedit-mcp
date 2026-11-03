@@ -103,11 +103,11 @@ Register it in a client's `.mcp.json` as a stdio server with the same command an
 ## 3b. Run as a local HTTP server
 
 ```
-MCP_ADMIN_TOKEN_HASH=<sha256 hex of the token> ZONEEDIT_SECRETS_CLI=<path to secrets.py> \
+ZONEEDIT_BEARER_SHA256=<sha256 hex of the token> ZONEEDIT_SECRETS_CLI=<path to secrets.py> \
   python3 zoneedit_server.py
 ```
 
-It binds `127.0.0.1:8768`. With `MCP_ADMIN_TOKEN_HASH` unset or not a 64-character hex digest the server refuses
+It binds `127.0.0.1:8768`. With `ZONEEDIT_BEARER_SHA256` unset or not a 64-character hex digest the server refuses
 to start and exits with code 2. Only the hash is configured, never the token. Register it as an `http` server at
 `http://127.0.0.1:8768/mcp` with a header helper that sends the bearer. The other variables are in the README
 under [Environment](../README.md#environment).

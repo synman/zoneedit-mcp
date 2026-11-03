@@ -45,7 +45,7 @@ def test_malformed_hash_refuses_every_token(monkeypatch, value):
 
 def test_right_bearer_passes():
     assert g.verify_bearer(GOOD) is True
-    assert g.identify_bearer(GOOD) == g.FLEET
+    assert g.identify_bearer(GOOD) == g.SHARED
 
 
 def test_right_bearer_passes_gate(verified):
@@ -91,7 +91,7 @@ def _run_middleware(header: bytes | None):
 
 def test_middleware_records_right_bearer():
     seen = _run_middleware(b"Bearer " + GOOD.encode())
-    assert seen == {"verified": True, "principal": g.FLEET}
+    assert seen == {"verified": True, "principal": g.SHARED}
 
 
 def test_middleware_records_wrong_or_missing_bearer():

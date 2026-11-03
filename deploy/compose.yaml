@@ -2,11 +2,11 @@
 #   docker compose --env-file ./site.vars -f compose.yaml up -d --build
 # Layout beside this file (all owned by DEPLOY_UID / DEPLOY_GID):
 #   site.vars              this deployment's site values (copy site.vars.example; no secret in it)
-#   zoneedit-mcp.env       MCP_ADMIN_TOKEN_HASH=<sha256 of the fleet token>, 0600; never the token
+#   zoneedit-mcp.env       ZONEEDIT_BEARER_SHA256=<sha256 of the shared token>, 0600; never the token
 #   vault/                 zoneedit-mcp.vault + zoneedit-mcp.key, holding ONLY the two panel credentials and the TOTP seed;
 #                          built and refreshed from the main vault by deploy/zoneedit_admin.py vault sync
-#   node-vault-mcp/        holds services/secrets.py and services/vault_secrets/, mounted read-only at
-#                          /opt/node-vault-mcp (so the CLI path is node-vault-mcp/services/secrets.py)
+#   vault-cli/        holds services/secrets.py and services/vault_secrets/, mounted read-only at
+#                          /opt/vault-cli (so the CLI path is vault-cli/services/secrets.py)
 # The port binds the host loopback only. The reverse proxy in front of it is the only LAN-facing path.
 services:
   zoneedit-mcp:
@@ -15,7 +15,7 @@ services:
       dockerfile: Dockerfile
     image: zoneedit-mcp:local
     container_name: zoneedit-mcp
-    # Docker's default bridge, as amt-mcp's compose: a proxy that admits only the LAN and that bridge
+    # Docker's default bridge: a proxy that admits only the LAN and that bridge
     # reaches the port. A compose network would need its own allow rule.
     network_mode: bridge
     user: "${DEPLOY_UID:?set in site.vars}:${DEPLOY_GID:?set in site.vars}"
@@ -28,12 +28,12 @@ services:
       ZONEEDIT_BIND_HOST: 0.0.0.0
       ZONEEDIT_PORT: "8768"
       ZONEEDIT_ALLOWED_HOSTS: ${ZONEEDIT_ALLOWED_HOSTS:?set in site.vars}
-      ZONEEDIT_SECRETS_CLI: /opt/node-vault-mcp/services/secrets.py
+      ZONEEDIT_SECRETS_CLI: /opt/vault-cli/services/secrets.py
       ZONEEDIT_CHROME_ARGS: --no-sandbox --disable-dev-shm-usage
       NVAULT_VAULT_PATH: /vault/zoneedit-mcp.vault
       NVAULT_MASTER_KEY_FILE: /vault/zoneedit-mcp.key
     volumes:
       - ./vault:/vault
-      - ./node-vault-mcp:/opt/node-vault-mcp:ro
+      - ./vault-cli:/opt/vault-cli:ro
     ports:
       - "127.0.0.1:8768:8768"

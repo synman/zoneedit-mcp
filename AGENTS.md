@@ -13,7 +13,7 @@ argument, refusal code, dependency, environment variable or vault entry.
 
 - **Bearer gate is mandatory and fails closed.** Every tool call is gated in
   `GatedFastMCP.call_tool` (`zoneedit_gate.py`). Refusals are MCP tool errors, never HTTP 401/403.
-  Unset or malformed `MCP_ADMIN_TOKEN_HASH` refuses every token. Only an explicit
+  Unset or malformed `ZONEEDIT_BEARER_SHA256` refuses every token. Only an explicit
   `ZONEEDIT_TRANSPORT=stdio` skips the gate. Never pass `auth=` or `token_verifier=` to `FastMCP`,
   and never add a tool outside `GatedFastMCP`.
 - **Conformity test reads the live tool list.** `tests/test_conformity.py` checks `list_tools()`; parameters are documented in the schema (`Annotated[..., Field(description=...)]`), not the docstring.

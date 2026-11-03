@@ -6,7 +6,7 @@ Terms used across the README and the guides, in alphabetical order.
 |------|---------|
 | **Apex** | The bare domain itself, written `@` as a host. |
 | **Authenticator / TOTP** | The six-digit time-based code of the panel's second factor (RFC 6238, HMAC-SHA1, 30 second step), made from the seed. No Google app is needed, because the server computes it itself. It answers once per login. |
-| **Bearer** | The `Authorization: Bearer <token>` header. Every tool call over HTTP needs the fleet `mcp-admin-token`. |
+| **Bearer** | The `Authorization: Bearer <token>` header. Every tool call over HTTP needs the shared admin bearer token. |
 | **Bulk save mode** | A panel editor switch. It must be off, read live from the checked state of `#editor_bulk_save_mode`, or a write is refused (`bulk_save_on_or_unknown`). |
 | **`confirmed`** | The write guard. False or unset previews and changes nothing. True makes the change, and only after the operator approves that exact change. |
 | **`complete` / `warning`** | Fields of a records read. `complete` is true when every page and row was read. `warning` appears when the read is incomplete or empty. |
@@ -21,7 +21,7 @@ Terms used across the README and the guides, in alphabetical order.
 | **DYN** | A dynamic DNS record type, kept fresh by an update client. |
 | **`expect_content` / `expect_hash`** | The arguments that name the row an update or delete acts on. Matched exactly. |
 | **Fields** | The form inputs of a record type, such as a CAA tag or an SRV port. Read from the live form by `zoneedit_schema`. |
-| **Fleet token** | The shared `mcp-admin-token`. Only its SHA-256 hash is configured on the server. |
+| **Shared token** | The shared admin bearer token. Only its SHA-256 hash is configured on the server. |
 | **Gate** | The bearer check around every tool call. It fails closed. |
 | **Hash** | A row's `data-hash` from the panel, returned by `zoneedit_records`. It names one row for update and delete. |
 | **Headless Chrome** | Chrome with no window, driven by Patchright. |

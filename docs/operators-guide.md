@@ -18,7 +18,7 @@ Installing and deploying the server is in the [install guide](install-guide.md) 
 | Add, change or delete one record | `zoneedit_record_add`, `zoneedit_record_update`, `zoneedit_record_delete` | Only with `confirmed=true` |
 | Unblock logins after a failure was fixed | `zoneedit_2fa_latch_clear` | Only with `confirmed=true`, and never DNS. Without it, it only reports the seconds left. |
 
-Every tool call over HTTP needs the fleet `mcp-admin-token` bearer. A registered client sends it for you.
+Every tool call over HTTP needs the shared admin bearer token. A registered client sends it for you.
 Only the panel login is configured. Domains, record types, form fields and name servers are read from the
 account on every call, so nothing here is specific to one zone.
 

@@ -139,5 +139,5 @@ def test_serving_set_is_exactly_what_the_image_copies_and_the_app_name_is_ours()
     in_image = set(copies[0][1:-1])
     assert len(in_image) >= 7                      # non-vacuous
     assert set(mod.SERVING) == in_image            # a module added to the image must be added to SERVING
-    for f in ("README.md", "CLAUDE.md", "Dockerfile", "deploy/compose.yaml", "tests/test_tools.py"):
+    for f in ("README.md", "AGENTS.md", "Dockerfile", "deploy/compose.yaml", "tests/test_tools.py"):
         assert not mod.is_serving(f), f
