@@ -35,7 +35,7 @@ _W = [
     "snow-" + "py", "snow-" + "mcp", "her" + "mes", "agent-" + "meetings", "node-kb", "node-git", "node-extract",
     "node-whis", "node-fed", "node-web", "node-proc", "~/" + "ai",
     "cla" + "ude", "open" + "code", "copi" + "lot", ".virtual" + "envs", ".s" + "sl", "enter" + "prise", "ms" + "365",
-    "ji" + "ra", 'amt-mcp', 'node-vault', 'node-signal', 'ds1621', '/volume1', '10.151', 'dnsmasq', 'DSM', "mcp-admin-" + "token", "mcp-admin-" + "one", "atlas" + "sian", "home-" + "assistant",
+    "ji" + "ra", 'am' + 't-mcp', 'no' + 'de-vault', 'no' + 'de-signal', 'ds' + '1621', '/v' + 'olume1', '10' + '.151', 'dn' + 'smasq', 'DS' + 'M', "mcp-admin-" + "token", "mcp-admin-" + "one", "atlas" + "sian", "home-" + "assistant",
 ]
 # A placeholder like <w-o-r-k-s-p-a-c-e>, but not a generic type such as Promise<Workspace>.
 _PLACEHOLDER = r"(?<![A-Za-z0-9_])<" + "work" + "space>"
