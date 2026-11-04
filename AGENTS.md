@@ -66,12 +66,12 @@ argument, refusal code, dependency, environment variable or vault entry.
   (`replace_prompt_shown`). No code path clicks Confirm or the zone-level save.
 - **The panel re-read decides `ok`.** After a confirmed write every page is re-read. DNS read-back
   uses the system `dig` (`/usr/bin/dig` on macOS), is informative only, and never changes `ok`.
-- **No version since 1.1.1 has a confirmed live write of any type.** Add and delete for TXT and CNAME were proven live
-  on 2026-11-01, on version 1.1.1. The write path was rebuilt since (schema read, generic fill, row-set
-  verification), so that proof does not cover it. Write PREVIEWS of ten types planned correctly against the
-  live schema on 2026-11-02. The first confirmed write needs one operator-approved throwaway record, and it
-  will show whether other rows keep their `hash` across a write, which the new verification assumes. Nothing in
-  the suite touches the panel or DNS.
+- **Live write proof is TXT on 1.9.2 and TXT and CNAME on 1.1.1.** On 2026-11-03 a TXT test record was added,
+  updated, added a second time beside the first (the panel kept both rows) and deleted twice. Each step was
+  verified by the panel re-read and both name servers, and the other rows kept their `hash`. Add and delete for
+  TXT and CNAME were proven live on 2026-11-01 on version 1.1.1. No confirmed write exists for the apex A, NS,
+  SOA or DYN, for any other type, for the replace prompt or for `outcome: unknown`. Write PREVIEWS of ten types
+  planned correctly against the live schema on 2026-11-02. Nothing in the suite touches the panel or DNS.
 - **Tool listing is open, tool calls are gated.** `initialize` and `tools/list` need no bearer and return
   names and descriptions only. The gate sits in the tool-dispatch wrapper, so no tool runs and the panel
   is never touched without the bearer.

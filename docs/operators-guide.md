@@ -63,7 +63,7 @@ zoneedit_record_delete {"domain": "example.net", "type": "TXT", "host": "www", "
 ## Adding a second row
 
 The add tool is built to add a further row beside any row of the same host and type, such as a second `MX` or
-`TXT`. **This is not proven live**: see "What is proven" below. The preview lists the rows already there as
+`TXT`. **It was proven live for `TXT` on 2026-11-03**: see "What is proven" below. The preview lists the rows already there as
 `before`. If the panel replaces a row instead of adding, the tool stops at the panel's Confirm prompt
 (`replace_prompt_shown`) or the re-read fails with `another row vanished`. Neither is reported as done.
 
@@ -106,9 +106,11 @@ check are in the [install guide](install-guide.md#2a-set-up-the-second-factor-to
 ## What is proven
 
 Read this before relying on a write. The sections of the README under "Where it runs" hold the dated record.
-No version since 1.1.1 has a confirmed live write of any type. The first confirmed write needs one
-operator-approved throwaway record. It will also show whether a further row beside an existing host and type
-is added or replaced, and whether other rows keep their `hash`.
+On 2026-11-03, on version 1.9.2, a `TXT` test record was added, updated, added a second time beside the first
+and deleted twice. Each step was verified by the panel re-read and both name servers. The panel kept both
+rows, so an add does not replace, and the other rows kept their `hash`. On version 1.1.1 a `TXT` and a `CNAME`
+add and delete were proven live. No confirmed write exists for the apex `A`, `NS`, `SOA` or `DYN`, for any other
+record type, or for the panel's replace prompt.
 
 **Update this guide when** a tool, an argument, a refusal code or the safe routine changes. The tool text in
 `zoneedit_server.py` and the conformity test `tests/test_conformity.py` are the source of the tool facts here.
